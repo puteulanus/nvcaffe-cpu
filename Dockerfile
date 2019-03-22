@@ -18,14 +18,15 @@ RUN apt-get install -y --no-install-recommends autoconf automake libtool curl ma
 
 FROM ubuntu:18.04 AS mkl
 
+ENV MKL_VERSION='2019.3-062'
+
 # MKL
-RUN curl -O https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB && \
-    apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB && \
-    rm -f GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB && \
+RUN apt-get update && apt-get install wget -y
+RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB | apt-key add - && \
     echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list.d/intel-mkl.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends intel-mkl-2019.1-053 && \
-    ln -s '/opt/intel/compilers_and_libraries_2019.1.144/linux/compiler/lib/intel64_lin/libiomp5.so' /lib/libiomp5.so
+    apt-get install -y --no-install-recommends intel-mkl-64bit-${MKL_VERSION} && \
+    ln -s /opt/intel/compilers_and_libraries_*/linux/compiler/lib/intel64_lin/libiomp5.so /lib/libiomp5.so
 
 FROM ubuntu:18.04 AS caffe
 
@@ -36,7 +37,7 @@ ENV MKL_ROOT=/opt/intel/mkl
 ENV MKL_INCLUDE=$MKL_ROOT/include
 ENV MKL_LIBRARY=$MKL_ROOT/lib/intel64
 
-RUN ln -s '/opt/intel/compilers_and_libraries_2019.1.144/linux/compiler/lib/intel64_lin/libiomp5.so' /lib/libiomp5.so
+RUN ln -s /opt/intel/compilers_and_libraries_*/linux/compiler/lib/intel64_lin/libiomp5.so /lib/libiomp5.so
 
 # Caffe
 ENV DEBIAN_FRONTEND=noninteractive
@@ -73,7 +74,7 @@ ENV MKL_ROOT=/opt/intel/mkl
 ENV MKL_INCLUDE=$MKL_ROOT/include
 ENV MKL_LIBRARY=$MKL_ROOT/lib/intel64
 
-RUN ln -s '/opt/intel/compilers_and_libraries_2019.1.144/linux/compiler/lib/intel64_lin/libiomp5.so' /lib/libiomp5.so
+RUN ln -s /opt/intel/compilers_and_libraries_*/linux/compiler/lib/intel64_lin/libiomp5.so /lib/libiomp5.so
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev python-dev \
